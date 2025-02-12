@@ -27,8 +27,8 @@ library(tidycensus)
 
 median_income <- get_acs(
   geography = "county",
-  variables = "B19013_001", # median income
-  year = 2021
+  variables = "B25077_001", # median income
+  year = 2023
 )
 
 # click on the rectangular grid icon next to 'median_income' on the top right under the `Environment` tab
@@ -52,7 +52,7 @@ write_csv(median_income, "whatever_filename_you_want.csv", na="")
 median_value_1yr <- get_acs(
   geography = "county",
   variables = "B25077_001", # median value of homes
-  year = 2021,
+  year = 2022,
   survey = "acs1" # <<
 )
 
@@ -62,38 +62,6 @@ median_value_1yr <- get_acs(
 View(median_value_1yr)
 
 
-## Requesting tables of variables ----
-
-# The `table` parameter can be used to obtain all related variables in a "table" at once
-
-# Household income brackets 
-# https://data.census.gov/table/ACSDT5Y2018.B19001?q=B19001&g=860XX00US77051&table=B19001&tid=ACSDT5Y2018.B19001
-
-income_table <- get_acs(
-  geography = "county",
-  table = "B19001", #<<
-  year = 2021
-)
-
-View(income_table)
-
-## Querying tract data requires county and state ----
-
-# For geographies available below the state level, the `state` parameter allows you to query data for a specific state
-# For smaller geographies (Census tracts, block groups), a `county` can also be requested
-# __tidycensus__ translates state names and postal abbreviations internally, so you don't need to remember the FIPS codes!
-# Example: data on median household income in Minnesota by county
-
-sd_value <- get_acs(
-  geography = "tract",
-  variables = "B25077_001",
-  state = "CA",
-  county = "San Diego",
-  year = 2022
-)
-
-View(sd_value)
-
 ## Searching for variables ----
 
 # To search for variables, use the `load_variables()` function along with a year and dataset
@@ -102,6 +70,55 @@ View(sd_value)
 vars <- load_variables(2022, "acs5")
 
 View(vars)
+
+
+## Requesting tables of variables ----
+
+
+# The `table` parameter can be used to obtain all related variables in a "table" at once
+
+# Household income brackets
+# https://data.census.gov/table/ACSDT5Y2018.B19001?q=B19001&g=860XX00US77051&table=B19001&tid=ACSDT5Y2018.B19001
+
+couples_table <- get_acs(
+  geography = "state",
+  table = "B11009", #<<
+  year = 2022
+)
+
+View(couples_table)
+
+## Renaming variables easily
+
+couples_table_selected <- get_acs(
+  geography = "state",
+  variables = c(married_total = "B11009_002",
+                married_opposite_sex = "B11009_003",
+                married_same_sex = "B11009_004",
+                married_male_male = "B11009_005",
+                married_female_female = "B11009_006"),
+  year = 2022
+)
+
+couples_table_selected
+
+## Querying tract data requires county and state ----
+
+# For geographies available below the state level, the `state` parameter allows you to query data for a specific state
+# For smaller geographies (Census tracts, block groups), a `county` can also be requested
+# __tidycensus__ translates state names and postal abbreviations internally, so you don't need to remember the FIPS codes!
+# Example: data on median household income in Minnesota by county
+
+la_value <- get_acs(
+  geography = "tract",
+  variables = "B25077_001",
+  state = "CA",
+  county = "Los Angeles",
+  year = 2023
+)
+
+View(la_value)
+
 
 ## "Tidy" or long-form data ----
 
@@ -126,40 +143,28 @@ age_sex_table_wide <- get_acs(
 
 age_sex_table_wide
 
-## Renaming variables easily ----
 
-ca_education <- get_acs(
-  geography = "county",
-  state = "CA",
-  variables = c(percent_high_school = "DP02_0062P",
-                percent_bachelors = "DP02_0065P",
-                percent_graduate = "DP02_0066P"),
-  year = 2021
-)
+## Somali speakers by state (1-year ACS) ----
 
-ca_education
-
-## Tagalog speakers by state (1-year ACS) ----
-
-tagalog1 <- get_acs(
+somali1 <- get_acs(
   geography = "state",
-  variables = "B16001_099",
-  year = 2022,
+  variables = "B16001_111",
+  year = 2023,
   survey = "acs1"
 )
 
-tagalog1
+somali1
 
 ## Tagalog speakers by state (5-year ACS) ----
 
-tagalog5 <- get_acs(
+somali5 <- get_acs(
   geography = "state",
-  variables = "B16001_099",
+  variables = "B16001_111",
   year = 2022,
   survey = "acs5"
 )
 
-tagalog5
+somali5
 
 ## 2020 US Census in Tidycensus ----
 

@@ -1,8 +1,8 @@
 ---
 title: "Tidycensus will convince you to learn R"
-subtitle: "nicar.r-journalism.com/2024/"
+subtitle: "nicar.r-journalism.com/2025/"
 author: "Andrew Ba Tran @abtran"
-date: March 9, 2024
+date: March 7, 2025
 lightbox: true
 format: 
   revealjs: 
@@ -22,7 +22,7 @@ options(tigris_use_cache = TRUE)
 
 ## Workshop agenda
 
-* nicar.r-journalism.com/2024/ (Follow along here)
+* nicar.r-journalism.com/2025/ (Follow along here)
 
 * Survey: https://bit.ly/3T6LkQh
 
@@ -139,7 +139,7 @@ By [Kyle Walker](https://walker-data.com/)
 
 ```{r install-packages, eval = FALSE}
 install.packages(c("tidycensus", "tidyverse", "mapview", "usethis"))
-usethis::use_course("https://github.com/r-journalism/nicar-2024-tidycensus/archive/master.zip")
+usethis::use_course("https://github.com/r-journalism/nicar-2025-tidycensus/archive/master.zip")
 ```
 
 
@@ -165,7 +165,7 @@ open 01_tidycensus.R in RStudio
 
 * The `get_acs()` function is your portal to access ACS data using tidycensus
 
-* The two required arguments are `geography` and `variables`.  The function defaults to the latest 5-year ACS (Currently 2018-2022)
+* The two required arguments are [`geography`](https://www.census.gov/newsroom/blogs/random-samplings/2014/07/understanding-geographic-relationships-counties-places-tracts-and-more.html) and [`variables`](https://censusreporter.org/topics/table-codes/).  The function defaults to the latest 5-year ACS (Currently 2019-2023) 
 
 ```{r acs}
 library(tidycensus)
@@ -173,7 +173,7 @@ library(tidycensus)
 median_income <- get_acs(
   geography = "county",
   variables = "B25077_001", # median household income
-  year = 2022
+  year = 2023
 )
 ```
 
@@ -182,7 +182,7 @@ median_income <- get_acs(
 * ACS data are returned with five columns: `GEOID`, `NAME`, `variable`, `estimate`, and `moe`
 
 ```{r view-acs}
-median_income
+median_income # type this in the console and press enter
 ```
 
 ## Exploring your data with RStudio
@@ -206,6 +206,14 @@ write_csv(median_income, "whatever_filename_you_want.csv", na="")
 ## Take your data to Excel if you want
 
 ![](img/exported.png)
+
+## How to get this table from data.census.gov
+
+![](img/censusportal.png)
+
+## How the table looks from census.gov
+
+![](img/censusdownload.png)
 
 ## 1-year ACS data
 
@@ -231,6 +239,36 @@ median_value_1yr <- get_acs(
 median_value_1yr
 ```
 
+# Understanding variables and geograpy in tidycensus
+
+
+
+## Searching for variables
+
+* A good guide on available tables of variables is on [CensusReporter.org](https://censusreporter.org/topics/table-codes/)
+
+* To search for variables, use the `load_variables()` function along with a year and dataset
+
+* The `View()` function in RStudio allows for interactive browsing and filtering
+
+```{r search-variables, eval = FALSE}
+vars <- load_variables(2022, "acs5")
+```
+
+---
+
+
+```{r eval=F}
+View(vars)
+```
+![](img/vars.png)
+
+
+## Search for "coupled households" in the search bar
+
+![](img/coupled_households.png)
+
+
 
 ## Requesting tables of variables
 
@@ -239,9 +277,9 @@ median_value_1yr
 ```{r census-table}
 #| code-line-numbers: "|3"
 
-income_table <- get_acs(
-  geography = "county", 
-  table = "B19001", 
+couples_table <- get_acs(
+  geography = "state", 
+  table = "B11009", 
   year = 2022
 )
 ```
@@ -249,13 +287,41 @@ income_table <- get_acs(
 ---
 
 ```{r view-table}
-income_table
+couples_table
 ```
 
 
-# Understanding geography and variables in tidycensus
+## Using named vectors of variables
+
+
+* Census variables can be hard to remember; using a named vector to request variables will replace the Census IDs with a custom input
+
+* In long form, these custom inputs will populate the `variable` column; in wide form, they will replace the column names
+
+## Renaming variables easily
+
+```{r named-variables}
+#| code-line-numbers: "3|4|5|6|7"
+
+couples_table_selected <- get_acs(
+  geography = "state",
+  variables = c(married_total = "B11009_002", 
+                married_opposite_sex = "B11009_003",
+                married_same_sex = "B11009_004",
+                married_male_male = "B11009_005",
+                married_female_female = "B11009_006"), 
+  year = 2022
+)
+```
 
 ---
+
+```{r show-named-variables}
+couples_table_selected
+```
+
+---
+
 
 ## US Census Geography
 
@@ -291,44 +357,27 @@ income_table
 
 ## Querying tract data requires county and state
 
-* Example: data on median home value in San Diego County, California by Census tract
+* Example: data on median home value in Los Angeles County, California by Census tract
 
 ```{r query-by-state}
 #| code-line-numbers: "|4|5"
 
-sd_value <- get_acs(
+la_value <- get_acs(
   geography = "tract", 
   variables = "B25077_001", 
   state = "CA", 
-  county = "San Diego",
-  year = 2022
+  county = "Los Angeles",
+  year = 2023
 )
 ```
 
 ---
 
 ```{r show-query-by-state}
-sd_value
+la_value
 ```
 
 
-## Searching for variables
-
-* To search for variables, use the `load_variables()` function along with a year and dataset
-
-* The `View()` function in RStudio allows for interactive browsing and filtering
-
-```{r search-variables, eval = FALSE}
-vars <- load_variables(2022, "acs5")
-```
-
----
-
-
-```{r eval=F}
-View(vars)
-```
-![](img/vars.png)
 
 
 
@@ -425,35 +474,6 @@ age_sex_table_wide
 
 
 
-## Using named vectors of variables
-
-
-* Census variables can be hard to remember; using a named vector to request variables will replace the Census IDs with a custom input
-
-* In long form, these custom inputs will populate the `variable` column; in wide form, they will replace the column names
-
-## Renaming variables easily
-
-```{r named-variables}
-#| code-line-numbers: "|4|5|6"
-
-ca_education <- get_acs(
-  geography = "county",
-  state = "CA",
-  variables = c(percent_high_school = "DP02_0062P", 
-                percent_bachelors = "DP02_0065P",
-                percent_graduate = "DP02_0066P"), 
-  year = 2021
-)
-```
-
-
----
-
-```{r show-named-variables}
-ca_education
-```
-
 
 # ACS data warnings
 
@@ -483,24 +503,24 @@ ca_education
 
 :::
 
-## Tagalog speakers by state (1-year ACS)
+## Somali speakers by state (1-year ACS)
 
 ```{r}
 get_acs(
   geography = "state",
-  variables = "B16001_099",
-  year = 2022,
+  variables = "B16001_111",
+  year = 2023,
   survey = "acs1"
 )
 ```
 
-## Tagalog speakers by state (5-year ACS)
+## Somali speakers by state (5-year ACS)
 
 ```{r}
 get_acs(
   geography = "state",
-  variables = "B16001_099",
-  year = 2022,
+  variables = "B16001_111",
+  year = 2023,
   survey = "acs5"
 )
 ```
@@ -577,21 +597,6 @@ This message is displayed once per session.
 * Intentional errors are introduced into data, impacting the accuracy of small area counts (e.g. some blocks with children, but no adults)
 
 * Advocates argue that differential privacy is necessary to satisfy Title 13 requirements given modern database reconstruction technologies; critics contend that the method makes data less useful with no tangible privacy benefit
-
-## Scavenger hunt
-
-Can you look through the `vars` table you loaded earlier and import the table that can answer this?
-
-* How many 18 to 24 year old Korean people are there in the US (2021)?
-* What percent of females in 2017 were below poverty level in the US (5 year)?
-
-```{r, eval=F}
-vars <- load_variables(2022, "acs5")
-
-get_acs(replace_this_with_the_right_arguments)
-```
-
-_How do you find the "right" variables or Census table ID? I do a couple things: Use [CensusReporter.org](https://censusreporter.org/topics/table-codes/) or I ask the oldest data reporter in the newsroom._
 
 
 # Wrangling and analyzing Census data
@@ -1183,7 +1188,7 @@ county_migration_moved <- county_migration |>
 ## Join the migration data with the shapefile
 
 ```{r}
-county_map_migration <- county_map %>%
+county_map_migration <- county_map |>
   inner_join(county_migration_moved)
 
 mapview(county_map_migration, zcol = "migration")
@@ -1199,11 +1204,11 @@ county_migration_moved <- county_migration |>
   filter(!is.na(GEOID2)) |>
   select(GEOID=GEOID2, migration=estimate) 
 
-county_map_migration <- county_map %>%
+county_map_migration <- county_map |>
   inner_join(county_migration_moved)
 
 mapview(county_map_migration, zcol = "migration")
 ```
 # Thank you!
 
-* nicar.r-journalism.com/2024/
+* nicar.r-journalism.com/2025/
